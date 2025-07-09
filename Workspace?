@@ -1,0 +1,96 @@
+import json
+import os
+
+# ---------- File Handling ----------
+def load_data(file):
+    if not os.path.exists(file):
+        return {}
+    with open(file, 'r') as f:
+        return json.load(f)
+
+def save_data(file, data):
+    with open(file, 'w') as f:
+        json.dump(data, f, indent=2)
+
+# ---------- Pantry Functions ----------
+def add_to_pantry(pantry):
+    item = input("Enter item to add: ").strip().lower()
+    qty = int(input(f"Enter quantity of '{item}': "))
+    pantry[item] = pantry.get(item, 0) + qty
+    print(f"Added {qty} {item}(s) to pantry.")
+    return pantry
+
+def view_pantry(pantry):
+    if not pantry:
+        print("Pantry is empty.")
+    else:
+        print("\n--- Your Pantry ---")
+        for item, qty in pantry.items():
+            print(f"{item}: {qty}")
+
+# ---------- Recipe Functions ----------
+def create_recipe(recipes):
+    name = input("Enter recipe name: ").strip().lower()
+    ingredients = {}
+    while True:
+        ing = input("Add ingredient (leave blank to finish): ").strip().lower()
+        if not ing:
+            break
+        qty = int(input(f"How many of '{ing}'? "))
+        ingredients[ing] = qty
+    recipes[name] = ingredients
+    print(f"Recipe '{name}' saved.")
+    return recipes
+
+def suggest_recipes(pantry, recipes):
+    print("\n--- Recipe Suggestions ---")
+    for name, ingredients in recipes.items():
+        if all(pantry.get(item, 0) >= qty for item, qty in ingredients.items()):
+            print(f"✅ {name}")
+        else:
+            print(f"❌ {name} (missing ingredients)")
+
+def view_recipe(recipes):
+    name = input("Enter recipe name to view: ").strip().lower()
+    if name in recipes:
+        print(f"\n{name.title()} Ingredients:")
+        for ing, qty in recipes[name].items():
+            print(f"- {ing}: {qty}")
+    else:
+        print("Recipe not found.")
+
+# ---------- Main Program ----------
+def main():
+    pantry = load_data('pantry.json')
+    recipes = load_data('recipes.json')
+
+    while True:
+        print("\n--- Kitchen Assistant ---")
+        print("1. Add to Pantry")
+        print("2. View Pantry")
+        print("3. Create Recipe")
+        print("4. View Recipe")
+        print("5. Suggest Recipes")
+        print("6. Exit")
+        choice = input("Choose an option: ")
+
+        if choice == '1':
+            pantry = add_to_pantry(pantry)
+            save_data('pantry.json', pantry)
+        elif choice == '2':
+            view_pantry(pantry)
+        elif choice == '3':
+            recipes = create_recipe(recipes)
+            save_data('recipes.json', recipes)
+        elif choice == '4':
+            view_recipe(recipes)
+        elif choice == '5':
+            suggest_recipes(pantry, recipes)
+        elif choice == '6':
+            print("Goodbye!")
+            break
+        else:
+            print("Invalid choice.")
+
+if __name__ == "__main__":
+    main()
